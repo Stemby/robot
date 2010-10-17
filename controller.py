@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-#TODO: disengage the clutch
-
 import pygame
 from subprocess import Popen
 
@@ -16,27 +14,54 @@ pygame.event.set_allowed(pygame.JOYAXISMOTION)
 pygame.event.set_allowed(pygame.JOYBUTTONUP)
 
 codes = {
-'stop':     96,
+'stop':      96,
 'forward':  240,
 'back':     112,
 'rforward': 176,
 'lforward': 208,
-'rback':    48,
-'lback':    80,
-'disengage': 0
+'rback':     48,
+'lback':     80,
+'disengage':  0
 }
 
 class Robot(object):
     def __init__(self):
-        self.joystick = Joystick()
-        self.dispatcher = Dispatcher()
+        for joystick in range(pygame.joystick.get_count()):
+            pygame.joystick.Joystick(joystick).init()
+
+        self.x = None
+        self.y = None
         self.direction = None
         self.engaged = False
 
-    def get_direction(self):
-        """Return the joystick direction."""
-
-        return self.joystick.get_direction(self.dispatcher.TODO)
+        while True:
+            queue = pygame.event.get()
+            for event in queue:
+                if event.type == pygame.JOYAXISMOTION:
+                    #print event.dict
+                    if event.dict['axis'] in (0, 4):
+                        self.x = event.dict['value']
+                    elif event.dict['axis'] in (1, 5):
+                        self.y = event.dict['value']
+                elif event.type == pygame.JOYBUTTONUP:
+                    #print event.dict
+                    if event.dict['button'] == 9:
+                        if not self.is_engaged():
+                            self.engaged = True
+                            print "Go!"
+                        else:
+                            self.engaged = False
+                            args = ['perl', 'bordomacchina.pl',
+                                    '0', '0']
+                            #Popen(args).wait()
+                            print "Press START to start"
+            if self.is_engaged():
+                newdirection = self.get_direction()
+                if newdirection not in (self.direction, None):
+                    self.direction = newdirection
+                    print self.direction
+                    #self.move(self.direction)
+            pygame.time.wait(50)
 
     def move(self, direction, time=0.5):
         """Move the robot in the indicated direction."""
@@ -44,29 +69,12 @@ class Robot(object):
         args = ['perl', 'bordomacchina.pl', str(direction), str(time)]
         Popen(args).wait()
 
-    def engage(self):
-        """Engage the clutch."""
-
-        self.engaged = True
-
-    def disengage(self):
-        """Disengage the clutch."""
-
-        self.engaged = False
-
     def is_engaged(self):
         """Return true if the clutch is engaged."""
 
         return self.engaged
 
-class Joystick(object):
-    def __init__(self):
-        for joystick in range(pygame.joystick.get_count()):
-            pygame.joystick.Joystick(joystick).init()
-        self.x = None
-        self.y = None
-
-    def get_direction(self, event):
+    def get_direction(self):
         """Return the direction code indicated by the joystick.
 
         96  = stop
@@ -77,15 +85,6 @@ class Joystick(object):
         48  = right back
         80  = left back
         """
-
-        queue = pygame.event.get()
-        for event in queue:
-            if event.type == pygame.JOYAXISMOTION:
-                #print event.dict
-                if event.dict['axis'] in (0, 4):
-                    self.x = event.dict['value']
-                elif event.dict['axis'] in (1, 5):
-                    self.y = event.dict['value']
 
         if self.y == -1:
             if self.x == 0:
@@ -105,20 +104,8 @@ class Joystick(object):
             if self.x == 0:
                 return codes['stop']
 
-class Dispatcher(object):
-    def __init__(self):
-        self.TODO = 'prova'
-
 def main():
-    robot = Robot()
-    print robot.direction
-    while True:
-        newdirection = robot.get_direction()
-        if newdirection not in (robot.direction, None):
-            robot.direction = newdirection
-            print robot.is_engaged(), robot.direction
-            #robot.move(robot.direction)
-        pygame.time.wait(50)
+    Robot()
 
 if __name__ == '__main__':
     main()
