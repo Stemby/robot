@@ -52,7 +52,7 @@ class Robot(object):
                         if self.is_engaged():
                             self.engaged = False
                             args = ['perl', 'bordomacchina.pl',
-                                    '0', '0']
+                                    str(codes['disengage']), '0']
                             #Popen(args).wait()
                             print "Press START to start"
                         else:
