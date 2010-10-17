@@ -34,6 +34,9 @@ class Robot(object):
         self.direction = None
         self.engaged = False
 
+        queue = pygame.event.get() # empty the queue
+        print "Press START to start"
+
         while True:
             queue = pygame.event.get()
             for event in queue:
@@ -46,15 +49,15 @@ class Robot(object):
                 elif event.type == pygame.JOYBUTTONUP:
                     #print event.dict
                     if event.dict['button'] == 9:
-                        if not self.is_engaged():
-                            self.engaged = True
-                            print "Go!"
-                        else:
+                        if self.is_engaged():
                             self.engaged = False
                             args = ['perl', 'bordomacchina.pl',
                                     '0', '0']
                             #Popen(args).wait()
                             print "Press START to start"
+                        else:
+                            self.engaged = True
+                            print "Go!"
             if self.is_engaged():
                 newdirection = self.get_direction()
                 if newdirection not in (self.direction, None):
