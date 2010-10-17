@@ -29,8 +29,8 @@ class Robot(object):
         for joystick in range(pygame.joystick.get_count()):
             pygame.joystick.Joystick(joystick).init()
 
-        self.x = None
-        self.y = None
+        self.x = 0
+        self.y = 0
         self.direction = None
         self.engaged = False
 
