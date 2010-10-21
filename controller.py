@@ -19,8 +19,8 @@ codes = {
 'back':     112,
 'rforward': 176,
 'lforward': 208,
-'rback':     48,
-'lback':     80,
+'rback':     80,
+'lback':     48,
 'disengage':  0
 }
 
@@ -51,9 +51,8 @@ class Robot(object):
                     if event.dict['button'] == 9:
                         if self.is_engaged():
                             self.engaged = False
-                            args = ['perl', 'bordomacchina.pl',
-                                    str(codes['disengage']), '0']
-                            #Popen(args).wait()
+                            self.send_command(str(codes['disengage']))
+                            self.direction = None
                             print "Press START to start"
                         else:
                             self.engaged = True
@@ -63,13 +62,19 @@ class Robot(object):
                 if newdirection not in (self.direction, None):
                     self.direction = newdirection
                     print self.direction
-                    #self.move(self.direction)
+                    self.move(self.direction)
             pygame.time.wait(50)
 
-    def move(self, direction, time=0.5):
+    def move(self, direction):
         """Move the robot in the indicated direction."""
 
-        args = ['perl', 'bordomacchina.pl', str(direction), str(time)]
+        self.send_command(str(direction))
+
+    def send_command(self, command):
+        """Send a command to the robot board."""
+
+        args = 'echo ssh glux@10.22.22.222 ./bordomacchina.pl'.split() +\
+                [command]
         Popen(args).wait()
 
     def is_engaged(self):
@@ -85,8 +90,8 @@ class Robot(object):
         112 = back
         176 = right forward
         208 = left forward
-        48  = right back
-        80  = left back
+        80  = right back
+        48  = left back
         """
 
         if self.y == -1:
