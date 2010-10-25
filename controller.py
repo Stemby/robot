@@ -19,8 +19,8 @@ codes = {
 'back':     112,
 'rforward': 176,
 'lforward': 208,
-'rback':     80,
-'lback':     48,
+'rback':     48,
+'lback':     80,
 'disengage':  0
 }
 
@@ -63,6 +63,9 @@ class Robot(object):
                     self.direction = newdirection
                     print self.direction
                     self.move(self.direction)
+                    if self.direction == codes['stop']:
+                        pygame.time.wait(100)
+                        self.send_command(str(codes['disengage']))
             pygame.time.wait(50)
 
     def move(self, direction):
@@ -73,7 +76,7 @@ class Robot(object):
     def send_command(self, command):
         """Send a command to the robot board."""
 
-        args = 'echo ssh glux@10.22.22.222 ./bordomacchina.pl'.split() +\
+        args = 'ssh -M glux@172.17.0.19 ./bordomacchina.pl'.split() +\
                 [command]
         Popen(args).wait()
 
@@ -90,8 +93,8 @@ class Robot(object):
         112 = back
         176 = right forward
         208 = left forward
-        80  = right back
-        48  = left back
+        48  = right back
+        80  = left back
         """
 
         if self.y == -1:
